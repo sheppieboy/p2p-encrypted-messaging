@@ -19,6 +19,8 @@ import (
 	"github.com/sheppieboy/p2p-encrypted-messaging/usertypes"
 )
 
+const uniqueString = "andlknad"
+
 type UniqueBroadcastMessage struct{
 	UniqueIdentfier string
 	Name string
@@ -48,19 +50,19 @@ func readBroadcastPacketFromUDPConnection(udpConn *net.UDPConn)(*UniqueBroadcast
 type P2PFinder struct{
 	UserProfile *usertypes.UserProfile
 	BroadcastFrequency time.Duration
-	BroadcastIP *net.UDPAddr
+	BroadcastAddr *net.UDPAddr
 }
 
-func NewP2PFinder(userProfile *usertypes.UserProfile, frequency time.Duration, broadcastIP *net.UDPAddr) *P2PFinder {
+func NewP2PFinder(userProfile *usertypes.UserProfile, frequency time.Duration, broadcastAddr *net.UDPAddr) *P2PFinder {
 	return &P2PFinder{
 		UserProfile: userProfile,
 		BroadcastFrequency: frequency,
-		BroadcastIP: broadcastIP,
+		BroadcastAddr: broadcastAddr,
 	}
 }
 
 func (pf *P2PFinder) broadCastToPeers(){
-	udpConn, err := net.DialUDP("udp", nil, pf.BroadcastIP)
+	udpConn, err := net.DialUDP("udp", nil, pf.BroadcastAddr)
 
 	if err != nil{
 		log.Fatal(err)
@@ -81,10 +83,37 @@ func (pf *P2PFinder) broadCastToPeers(){
 }
 
 func (pf *P2PFinder) listenForPeers(){
+	udpConn, err := net.ListenMulticastUDP("udp", nil, pf.BroadcastAddr)
+
+	if err != nil{
+		log.Fatal(err)
+	}
+
+	defer udpConn.Close()
+
+	for {
+		packet, senderAddr, err := readBroadcastPacketFromUDPConnection(udpConn)
+		if err != nil {
+			log.Println("Error reading from UDP:", err)
+			continue
+		}
+
+		// Process each packet in a separate goroutine
+		go func(addr *net.UDPAddr, msg *UniqueBroadcastMessage) {
+			// Process the broadcast message and add the peer to the list
+			// Note: Implement the logic to add the peer to the list using a mutex
+			// For example:
+			// pf.peerList.AddPeer(msg)
+
+			log.Printf("Received broadcast message from %s: %s", addr.String(), msg)
+		}(senderAddr, packet)
+	}
 	
 }
 
 func (pf *P2PFinder) StartP2PDiscovery(){
+	pf.broadCastToPeers()
+	pf.listenForPeers()
 }
 
 
