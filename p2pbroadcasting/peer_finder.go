@@ -62,6 +62,7 @@ func NewP2PFinder(userProfile *usertypes.UserProfile, frequency time.Duration, b
 }
 
 func (pf *P2PFinder) broadCastToPeers(){
+	fmt.Println("started broadcasting")
 	udpConn, err := net.DialUDP("udp", nil, pf.BroadcastAddr)
 
 	if err != nil{
@@ -83,6 +84,7 @@ func (pf *P2PFinder) broadCastToPeers(){
 }
 
 func (pf *P2PFinder) listenForPeers(){
+	fmt.Print("start listening")
 	udpConn, err := net.ListenMulticastUDP("udp", nil, pf.BroadcastAddr)
 
 	if err != nil{
@@ -112,8 +114,9 @@ func (pf *P2PFinder) listenForPeers(){
 }
 
 func (pf *P2PFinder) StartP2PDiscovery(){
-	pf.broadCastToPeers()
-	pf.listenForPeers()
+	go pf.broadCastToPeers()
+	go pf.listenForPeers()
+	select {}
 }
 
 
