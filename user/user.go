@@ -14,6 +14,7 @@ import (
 const (
 	BroadcastIP = "224.0.0.1"
 	Frequency = 1 * time.Second
+	Port = "5454"
 )
 
 type User struct{
@@ -22,7 +23,7 @@ type User struct{
 }
 
 func NewUser(userProfile *usertypes.UserProfile) *User {
-	broadcastAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%s", BroadcastIP, userProfile.Port))
+	broadcastAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%s", BroadcastIP, Port))
 	if err != nil{
 		log.Fatal(err)
 	}

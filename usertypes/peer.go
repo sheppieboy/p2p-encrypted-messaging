@@ -1,11 +1,14 @@
 package usertypes
 
-import "sync"
+import (
+	"net"
+	"sync"
+)
 
 type Peer struct {
 	Name string
-	Port string
-	PeerIPAddr string 
+	PeerUDPAddr *net.UDPAddr
+	
 }
 
 type PeerList struct {
@@ -23,6 +26,6 @@ func NewPeerList()*PeerList{
 func (pl *PeerList) AddPeer(p *Peer){
 	pl.RWMutex.Lock()
 	defer pl.RWMutex.Unlock()
-	//handle if peer is already in list
+	//need to handle if Peer is in peerlist
 	pl.Peers[p.Name] = p
 }

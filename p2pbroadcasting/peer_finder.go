@@ -19,12 +19,11 @@ import (
 	"github.com/sheppieboy/p2p-encrypted-messaging/usertypes"
 )
 
-const uniqueString = "andlknad"
+const uniqueString = "oogaboogie"
 
 type UniqueBroadcastMessage struct{
 	UniqueIdentfier string
 	Name string
-	Port string
 }
 
 func readBroadcastPacketFromUDPConnection(udpConn *net.UDPConn)(*UniqueBroadcastMessage, *net.UDPAddr, error){
@@ -44,7 +43,6 @@ func readBroadcastPacketFromUDPConnection(udpConn *net.UDPConn)(*UniqueBroadcast
 	return &UniqueBroadcastMessage{
 		UniqueIdentfier: userInfo[0],
 		Name: userInfo[1],
-		Port: userInfo[2],
 	},senderAddr,nil
 }
 
@@ -75,7 +73,7 @@ func (pf *P2PFinder) broadCastToPeers(){
 
 	for {
 		<-ticker.C
-		broadcastMsg := []byte(fmt.Sprintf("UniqueIdentfier:%s,Name:%s,Port:%s", uniqueString, pf.UserProfile.Name, pf.UserProfile.Port))
+		broadcastMsg := []byte(fmt.Sprintf("UniqueIdentfier:%s,Name:%s:", uniqueString, pf.UserProfile.Name))
 		_, err := udpConn.Write(broadcastMsg)
 		if err != nil{
 			log.Fatal(err)
