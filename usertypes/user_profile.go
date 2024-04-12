@@ -5,7 +5,7 @@ type UserProfile struct {
 	Port string
 }
 
-func newUserProfile(name string, port string) * UserProfile{
+func NewUserProfile(name string, port string) * UserProfile{
 	return &UserProfile{
 		Name: name,
 		Port: port,

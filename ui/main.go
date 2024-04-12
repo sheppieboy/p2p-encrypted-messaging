@@ -1,4 +1,4 @@
-package main
+package ui
 
 import (
 	"fyne.io/fyne/v2"
@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func main() {
+func ui() {
 	
 	myApp := app.New()
 	myWindow := myApp.NewWindow("Chat App")
