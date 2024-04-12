@@ -1,6 +1,9 @@
 package main
 
-import "github.com/sheppieboy/p2p-encrypted-messaging/usertypes"
+import (
+	"github.com/sheppieboy/p2p-encrypted-messaging/user"
+	"github.com/sheppieboy/p2p-encrypted-messaging/usertypes"
+)
 
 
 func main(){
@@ -8,7 +11,7 @@ func main(){
 	port := "5454"
 	userProfile := usertypes.NewUserProfile(name, port)
 
-	user := NewUser(userProfile)
+	user := user.NewUser(userProfile)
 
-	user.P2PFinder.StartP2PDiscovery()
+	user.Start()
 }
