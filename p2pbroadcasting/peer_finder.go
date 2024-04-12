@@ -10,6 +10,7 @@ The broadcaster will be a struct that is used by the user struct.  It will use c
 package p2pbroadcasting
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net"
@@ -24,26 +25,31 @@ const uniqueString = "oogaboogie"
 type UniqueBroadcastMessage struct{
 	UniqueIdentfier string
 	Name string
+	PublicKey string
 }
 
-func readBroadcastPacketFromUDPConnection(udpConn *net.UDPConn)(*UniqueBroadcastMessage, *net.UDPAddr, error){
+func readBroadcastPacketFromUDPConnection(udpConn *net.UDPConn)([]byte, *net.UDPAddr, error){
 	broadcastMessageBuffer := make([]byte, 1024)
 
-	n, senderAddr, err := udpConn.ReadFromUDP(broadcastMessageBuffer)
+	_, senderAddr, err := udpConn.ReadFromUDP(broadcastMessageBuffer)
 
 	if err != nil {
 		return nil, nil, err;
 	}
 
-	trimmedBytesArr:= broadcastMessageBuffer[:n]; //trim null bytes
+	return broadcastMessageBuffer, senderAddr, nil
+}
 
-	userInfo := strings.Split(string(trimmedBytesArr), ":")
-	fmt.Print(userInfo)
+func getBroadcastedMessageFromPeers(byteArr []byte)(*UniqueBroadcastMessage, error){
+	byteArr = bytes.Trim(byteArr, "\x00") //trim null bytes
+
+	strArr := strings.Split(string(byteArr), ":")
 
 	return &UniqueBroadcastMessage{
-		UniqueIdentfier: userInfo[0],
-		Name: userInfo[1],
-	},senderAddr,nil
+		UniqueIdentfier: strArr[0],
+		Name: strArr[1],
+		PublicKey: strArr[2],
+	}, nil
 }
 
 type P2PFinder struct{
@@ -73,7 +79,7 @@ func (pf *P2PFinder) broadCastToPeers(){
 
 	for {
 		<-ticker.C
-		broadcastMsg := []byte(fmt.Sprintf("UniqueIdentfier:%s,Name:%s:", uniqueString, pf.UserProfile.Name))
+		broadcastMsg := []byte(fmt.Sprintf("%s:%s:%s:", uniqueString, pf.UserProfile.Name, pf.UserProfile.DiffieHellman.ToString()))
 		_, err := udpConn.Write(broadcastMsg)
 		if err != nil{
 			log.Fatal(err)
@@ -99,15 +105,25 @@ func (pf *P2PFinder) listenForPeers(){
 			continue
 		}
 
+		msg, err := getBroadcastedMessageFromPeers(packet)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		// Process each packet in a separate goroutine
 		go func(addr *net.UDPAddr, msg *UniqueBroadcastMessage) {
 			// Process the broadcast message and add the peer to the list
 			// Note: Implement the logic to add the peer to the list using a mutex
 			// For example:
 			// pf.peerList.AddPeer(msg)
-
+			dh := pf.UserProfile.DiffieHellman
+			_, valid := dh.StringToPublicKey(msg.PublicKey)
+			if(valid){
+				log.Fatal("Bad public key")
+			}
 			log.Printf("Received broadcast message from %s: %s", addr.String(), msg)
-		}(senderAddr, packet)
+		}(senderAddr, msg)
 	}
 	
 }
