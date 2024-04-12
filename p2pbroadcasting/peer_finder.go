@@ -12,8 +12,8 @@ package p2pbroadcasting
 import (
 	"net"
 	"strings"
-	"time"
 )
+
 
 type UniqueBroadcastMessage struct{
 	UniqueIdentfier string
@@ -42,7 +42,23 @@ func readBroadcastPacketFromUDPConnection(udpConn *net.UDPConn)(*UniqueBroadcast
 }
 
 type P2PFinder struct{
-	Addr *net.UDPAddr
-	BroadcastFrequency time.Duration
+	User string
 }
+
+func newP2PFinder(user string)*P2PFinder{
+	return &P2PFinder{
+		User: user,
+	}
+}
+
+func (pf *P2PFinder) broadCastToPeers(){}
+
+func (pf *P2PFinder) listenForPeers(){}
+
+func (pf *P2PFinder) startP2PDiscovery(){}
+
+
+
+
+
 
