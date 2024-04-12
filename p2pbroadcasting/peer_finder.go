@@ -7,3 +7,42 @@ peer information.  The broadcaster will also broadcast the users relevant inform
 
 The broadcaster will be a struct that is used by the user struct.  It will use composition to add the functions to broadcast itself, listen for peers, and start itself.
 */
+package p2pbroadcasting
+
+import (
+	"net"
+	"strings"
+	"time"
+)
+
+type UniqueBroadcastMessage struct{
+	UniqueIdentfier string
+	Name string
+	Port string
+}
+
+func readBroadcastPacketFromUDPConnection(udpConn *net.UDPConn)(*UniqueBroadcastMessage, *net.UDPAddr, error){
+	broadcastMessageBuffer := make([]byte, 1024)
+
+	n, addr, err := udpConn.ReadFromUDP(broadcastMessageBuffer)
+
+	if err != nil {
+		return nil, nil, err;
+	}
+
+	trimmedBytesArr:= broadcastMessageBuffer[:n]; //trim null bytes
+
+	userInfo := strings.Split(string(trimmedBytesArr), ":")
+
+	return &UniqueBroadcastMessage{
+		UniqueIdentfier: userInfo[0],
+		Name: userInfo[1],
+		Port: userInfo[2],
+	},addr,nil
+}
+
+type P2PFinder struct{
+	Addr *net.UDPAddr
+	BroadcastFrequency time.Duration
+}
+
