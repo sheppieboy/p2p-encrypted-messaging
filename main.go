@@ -8,10 +8,10 @@ import (
 
 func main(){
 	name := "luke"
-	port := "5454"
-	userProfile := usertypes.NewUserProfile(name, port)
+	userProfile := usertypes.NewUserProfile(name)
+	userProfile.DiffieHellman.Print()
 
 	user := user.NewUser(userProfile)
-
+	
 	user.Start()
 }

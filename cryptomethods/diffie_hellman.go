@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"log"
+	"math/big"
 )
 
 type DiffieHellman struct{
@@ -29,7 +30,43 @@ func NewDiffieHellman()*DiffieHellman{
 	}
 }
 
+func (dh *DiffieHellman) SharedSecret(peerPubKey *ecdh.PublicKey) ([]byte){
+	sharedSecret, err := dh.PrivateKey.ECDH(peerPubKey)
+
+	if err != nil{
+		log.Fatalf("Error in shared secret generation %v:", err)
+	}
+	return sharedSecret
+}
+
+func (dh *DiffieHellman) ToString() string {
+	bytesPubKey := dh.PublicKey.Bytes()
+	intPubKey := new(big.Int).SetBytes(bytesPubKey)
+	strPublicKey := intPubKey.String()
+	return strPublicKey
+}
+
+func (dh *DiffieHellman) StringToPublicKey(strPublicKey string)(*ecdh.PublicKey, bool){
+	intPubKey := new(big.Int)
+	intPubKey.SetString(strPublicKey, 10) //base 10
+	bytesPubKey := intPubKey.Bytes()
+	pubKey, err := dh.PublicKey.Curve().NewPublicKey(bytesPubKey)
+
+	if err != nil{
+		log.Fatalf("Invalid Public key %v", err)
+	}
+	valid := dh.PublicKey.Equal(pubKey)
+	return pubKey, valid
+}
+
+
 func (dh *DiffieHellman) Print(){
-	fmt.Println(dh.PrivateKey)
-	fmt.Println(dh.PublicKey)
+	pk := dh.PrivateKey.Bytes()
+	valid, err := dh.PrivateKey.Curve().NewPrivateKey(pk)
+
+	if err != nil{
+		log.Fatal(err)
+	}
+
+	fmt.Println(dh.PrivateKey.Equal(valid))
 }
