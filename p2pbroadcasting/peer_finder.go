@@ -10,10 +10,16 @@ The broadcaster will be a struct that is used by the user struct.  It will use c
 package p2pbroadcasting
 
 import (
+	"fmt"
+	"log"
 	"net"
 	"strings"
+	"time"
+
+	"github.com/sheppieboy/p2p-encrypted-messaging/usertypes"
 )
 
+const uniqueString = "najdsbajds"
 
 type UniqueBroadcastMessage struct{
 	UniqueIdentfier string
@@ -24,7 +30,7 @@ type UniqueBroadcastMessage struct{
 func readBroadcastPacketFromUDPConnection(udpConn *net.UDPConn)(*UniqueBroadcastMessage, *net.UDPAddr, error){
 	broadcastMessageBuffer := make([]byte, 1024)
 
-	n, addr, err := udpConn.ReadFromUDP(broadcastMessageBuffer)
+	n, senderAddr, err := udpConn.ReadFromUDP(broadcastMessageBuffer)
 
 	if err != nil {
 		return nil, nil, err;
@@ -38,24 +44,46 @@ func readBroadcastPacketFromUDPConnection(udpConn *net.UDPConn)(*UniqueBroadcast
 		UniqueIdentfier: userInfo[0],
 		Name: userInfo[1],
 		Port: userInfo[2],
-	},addr,nil
+	},senderAddr,nil
 }
 
 type P2PFinder struct{
-	User string
+	UserProfile *usertypes.UserProfile
+	BroadcastFrequency time.Duration
+	BroadcastIP *net.UDPAddr
 }
 
-func newP2PFinder(user string)*P2PFinder{
+func NewP2PFinder(userProfile *usertypes.UserProfile, frequency time.Duration, broadcastIP *net.UDPAddr) *P2PFinder {
 	return &P2PFinder{
-		User: user,
+		UserProfile: userProfile,
+		BroadcastFrequency: frequency,
+		BroadcastIP: broadcastIP,
 	}
 }
 
-func (pf *P2PFinder) broadCastToPeers(){}
+func (pf *P2PFinder) broadCastToPeers(){
+	udpConn, err := net.DialUDP("udp", nil, pf.BroadcastIP)
+
+	if err != nil{
+		log.Fatal(err)
+	}
+	ticker := time.NewTicker(pf.BroadcastFrequency)
+
+	for {
+		<-ticker.C
+		broadcastMsg := []byte(fmt.Sprintf("UniqueIdentfier:%s,Name:%s,Port:%s", uniqueString, pf.UserProfile.Name, pf.UserProfile.Port))
+		_, err := udpConn.Write(broadcastMsg)
+		if err != nil{
+			log.Fatal(err)
+		}
+	}
+	
+}
 
 func (pf *P2PFinder) listenForPeers(){}
 
-func (pf *P2PFinder) startP2PDiscovery(){}
+func (pf *P2PFinder) StartP2PDiscovery(){
+}
 
 
 
