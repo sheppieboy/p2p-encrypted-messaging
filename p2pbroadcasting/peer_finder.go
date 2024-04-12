@@ -30,15 +30,16 @@ type UniqueBroadcastMessage struct{
 func readBroadcastPacketFromUDPConnection(udpConn *net.UDPConn)(*UniqueBroadcastMessage, *net.UDPAddr, error){
 	broadcastMessageBuffer := make([]byte, 1024)
 
-	_, senderAddr, err := udpConn.ReadFromUDP(broadcastMessageBuffer)
+	n, senderAddr, err := udpConn.ReadFromUDP(broadcastMessageBuffer)
 
 	if err != nil {
 		return nil, nil, err;
 	}
 
-	// trimmedBytesArr:= broadcastMessageBuffer[:n]; //trim null bytes
+	trimmedBytesArr:= broadcastMessageBuffer[:n]; //trim null bytes
 
-	userInfo := strings.Split(string(broadcastMessageBuffer), ":")
+	userInfo := strings.Split(string(trimmedBytesArr), ":")
+	fmt.Print(userInfo)
 
 	return &UniqueBroadcastMessage{
 		UniqueIdentfier: userInfo[0],
@@ -84,7 +85,7 @@ func (pf *P2PFinder) broadCastToPeers(){
 }
 
 func (pf *P2PFinder) listenForPeers(){
-	fmt.Print("start listening")
+	fmt.Println("start listening")
 	udpConn, err := net.ListenMulticastUDP("udp", nil, pf.BroadcastAddr)
 
 	if err != nil{
@@ -95,7 +96,6 @@ func (pf *P2PFinder) listenForPeers(){
 
 	for {
 		packet, senderAddr, err := readBroadcastPacketFromUDPConnection(udpConn)
-		fmt.Println("Recieved Port: ", packet.Port)
 		if err != nil {
 			log.Println("Error reading from UDP:", err)
 			continue
