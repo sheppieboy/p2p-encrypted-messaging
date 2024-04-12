@@ -19,8 +19,6 @@ import (
 	"github.com/sheppieboy/p2p-encrypted-messaging/usertypes"
 )
 
-const uniqueString = "najdsbajds"
-
 type UniqueBroadcastMessage struct{
 	UniqueIdentfier string
 	Name string
@@ -67,6 +65,8 @@ func (pf *P2PFinder) broadCastToPeers(){
 	if err != nil{
 		log.Fatal(err)
 	}
+	defer udpConn.Close()
+
 	ticker := time.NewTicker(pf.BroadcastFrequency)
 
 	for {
@@ -80,7 +80,9 @@ func (pf *P2PFinder) broadCastToPeers(){
 	
 }
 
-func (pf *P2PFinder) listenForPeers(){}
+func (pf *P2PFinder) listenForPeers(){
+	
+}
 
 func (pf *P2PFinder) StartP2PDiscovery(){
 }

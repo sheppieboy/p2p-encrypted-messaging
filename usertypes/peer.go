@@ -5,7 +5,7 @@ import "sync"
 type Peer struct {
 	Name string
 	Port string
-	Addr string 
+	PeerIPAddr string 
 }
 
 type PeerList struct {
