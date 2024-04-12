@@ -40,7 +40,29 @@ func NewMessenger(userProfile *usertypes.UserProfile) *Messenger {
 		ListeningUDPAddr: udpAddr,
 		UserProfile: userProfile,
 	}
+}
 
+func (m *Messenger) ListenForMessages(){
+	udpConn, err := net.ListenUDP("udp", m.ListeningUDPAddr)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer udpConn.Close()
+
+	for {
+		buffer := make([]byte, 1024)
+		_, senderAddr, err := udpConn.ReadFromUDP(buffer)
+
+		if err != nil{
+			log.Println("error reading from UDP:", err)
+		}
+
+		go func(addr *net.UDPAddr, message []byte){
+			fmt.Printf("Received message from %s: %s\n", addr.String(), string(message))
+		}(senderAddr, buffer)
+	}
 }
 
 
